@@ -67,9 +67,9 @@ struct MomentEntryView: View {
                             // dont dismiss when error
                         }
                     }
+                    .disabled(title.isEmpty)
                 }
             }
-            .disabled(title.isEmpty)
         }
     }
     
