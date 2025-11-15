@@ -7,6 +7,7 @@
 
 import SwiftUI
 import PhotosUI
+import SwiftData
 
 struct MomentEntryView: View {
     @State private var title = ""
@@ -15,8 +16,16 @@ struct MomentEntryView: View {
     // State for selected image in "Data" format
     @State private var imageData: Data?
     
-    // "container" for image picked from PhotosPicker
+    // State for image picked from PhotosPicker
     @State private var newImage: PhotosPickerItem?
+    
+    @State private var isShowingCancelConfirmation = false
+    
+    // Accessing SwiftUI environment for "dismiss" state in this layout/view
+    @Environment(\.dismiss) private var dismiss
+    
+    // Accessing app environment to access SwiftData
+    @Environment(DataContainer.self) private var dataContainer
     
     var body: some View {
         NavigationStack {
@@ -24,7 +33,43 @@ struct MomentEntryView: View {
                 contentStack
             }
             .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("Grateful For...")
+            .navigationTitle("Grateful For")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", systemImage: "xmark") {
+                        isShowingCancelConfirmation = true
+                    }
+                    .confirmationDialog("Discard Moment", isPresented: $isShowingCancelConfirmation) {
+                        Button("Discard Moment", role: .destructive) {
+                            if title.isEmpty, note.isEmpty, imageData == nil {
+                                dismiss()
+                            } else {
+                                isShowingCancelConfirmation = true
+                            }
+                        }
+                    }
+                }
+                
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Add", systemImage: "checkmark") {
+                        // create a Moment data when user tap add
+                        let newMoment = Moment(
+                            title: title,
+                            note: note,
+                            imageData: imageData,
+                            timestamp: .now
+                        )
+                        dataContainer.context.insert(newMoment)
+                        do {
+                            try dataContainer.context.save()
+                            dismiss()
+                        } catch {
+                            // dont dismiss when error
+                        }
+                    }
+                }
+            }
+            .disabled(title.isEmpty)
         }
     }
     
@@ -76,4 +121,5 @@ struct MomentEntryView: View {
 
 #Preview {
     MomentEntryView()
+        .sampleDataContainer()
 }
