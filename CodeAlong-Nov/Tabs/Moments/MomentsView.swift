@@ -59,7 +59,7 @@ struct MomentsView: View {
         .sampleDataContainer()
 }
 
-#Preview("No moments") {
-    MomentsView()
-        .modelContainer(for: [Moment.self])
-}
+//#Preview("No moments") {
+//    MomentsView()
+//        .modelContainer(for: [Moment.self])
+//}
